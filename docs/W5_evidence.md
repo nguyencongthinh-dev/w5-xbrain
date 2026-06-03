@@ -17,7 +17,7 @@ Dưới đây là sơ đồ chi tiết kiến trúc bảo mật **W5 Network For
 ---
 
 ## 2. MH1 — Multi-VPC Connectivity (Lựa chọn & Rationale)
-Nhóm chúng tôi lựa chọn **Path C — Justified Single-VPC** để tối ưu hóa chi phí cho tài khoản AWS Free Tier, tránh các chi phí phát sinh ngoài ý muốn từ endpoints của VPC Peering hoặc Transit Gateway, nhưng vẫn đảm bảo cấu trúc mạng chuẩn chỉnh của một hệ thống Production thực tế.
+Tôi lựa chọn **Path C — Justified Single-VPC** để tối ưu hóa chi phí cho tài khoản AWS Free Tier, tránh các chi phí phát sinh ngoài ý muốn từ endpoints của VPC Peering hoặc Transit Gateway, nhưng vẫn đảm bảo cấu trúc mạng chuẩn chỉnh của một hệ thống Production thực tế.
 
 ### Thông tin tài nguyên mạng đã triển khai:
 * **VPC ID:** `vpc-0325fea1804a1d478`
@@ -52,7 +52,7 @@ VPC Flow Logs đã được kích hoạt trên toàn bộ VPC và cấu hình đ
 
 
 ## 3. MH2 — Network Security Hardening (Hardened SG + NACL)
-Nhóm chúng tôi lựa chọn **Path B — Hardened Security Groups + NACL**. 
+Tôi lựa chọn **Path B — Hardened Security Groups + NACL**. 
 
 ### Rationale cho Hardened SG + NACL:
 1. **Không sử dụng NAT Gateway**: Để đảm bảo không phát sinh chi phí NAT Gateway (~$32/tháng), các tài nguyên trong Private Subnet không có đường ra internet trực tiếp.
@@ -84,7 +84,7 @@ Custom Network ACL (`w5-fortress-private-nacl`) được liên kết với 2 Pri
 ---
 
 ## 4. MH3 — File Storage Layer + Backup Plan
-Chúng tôi đã triển khai Amazon EFS để làm lớp chia sẻ dữ liệu dùng chung (shared storage) cho tầng App, và thiết lập AWS Backup để bảo vệ dữ liệu.
+Tôi đã triển khai Amazon EFS để làm lớp chia sẻ dữ liệu dùng chung (shared storage) cho tầng App, và thiết lập AWS Backup để bảo vệ dữ liệu.
 
 * **EFS File System ID:** `fs-0cc34ffc921ef28b3`
 * **Private App Host IP:** `10.0.11.235`
@@ -117,7 +117,7 @@ cat /mnt/efs/w5_verification.txt
 * **Schedule**: Backup hàng ngày vào lúc 05:00 UTC, lưu trữ (retention) trong 7 ngày.
 
 ### Kịch bản Restore Test:
-Để chứng minh kế hoạch sao lưu thực sự hoạt động, chúng tôi thực hiện các bước restore test sau:
+Để chứng minh kế hoạch sao lưu thực sự hoạt động, tôi thực hiện các bước restore test sau:
 1. Truy cập trang AWS Backup Console, chọn một điểm khôi phục (**Recovery Point**) của EFS trong Vault đã hoàn thành.
 2. Chọn hành động **Restore**, cấu hình khôi phục vào chính file system hiện tại (`newFileSystem: false`).
 3. Chờ trạng thái Restore Job chuyển sang **Completed**.
@@ -137,7 +137,7 @@ cat /mnt/efs/w5_verification.txt
 ---
 
 ## 5. MH4 — API Gateway trước Lambda
-Chúng tôi đã đặt API Gateway REST API trước Lambda để bảo vệ tài nguyên Bedrock và ép buộc bảo mật biên.
+Tôi đã đặt API Gateway REST API trước Lambda để bảo vệ tài nguyên Bedrock và ép buộc bảo mật biên.
 
 * **API Gateway URL:** `https://i1h84q6gnj.execute-api.us-east-1.amazonaws.com/prod/chat`
 * **API Key:** `0JI8S0QKc48L7cT5rVGuyGYnZXJT7lP4IHQxqd9e`
@@ -176,7 +176,7 @@ Chúng tôi đã đặt API Gateway REST API trước Lambda để bảo vệ t�
 ---
 
 ## 6. MH5 — Serverless Scaling Pattern (S3-Event-Triggered Lambda)
-Do giới hạn tài khoản ở mức concurrency thấp (Unreserved Concurrency tối thiểu 10), chúng tôi áp dụng mô hình **S3-Event-Triggered Lambda Pattern** cho Serverless Scaling Flow để tự động hóa luồng nghiệp vụ.
+Do giới hạn tài khoản ở mức concurrency thấp (Unreserved Concurrency tối thiểu 10), tôi áp dụng mô hình **S3-Event-Triggered Lambda Pattern** cho Serverless Scaling Flow để tự động hóa luồng nghiệp vụ.
 
 * **S3 Upload Bucket:** `w5-fortress-uploads-258325253510`
 * **Target DynamoDB Table:** `w5-fortress-chat-logs`
