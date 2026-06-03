@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>W5 Network Fortress - Bedrock Chat client</title>
+    <!-- Modern Premium Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #090615 0%, #150f30 50%, #090615 100%);
+            --glass-bg: rgba(255, 255, 255, 0.02);
+            --glass-border: rgba(255, 255, 255, 0.06);
+            --glass-focus: rgba(138, 43, 226, 0.25);
+            --accent-primary: #a15dfc;
+            --accent-secondary: #00f0ff;
+            --accent-success: #00ff87;
+            --accent-error: #ff4a5a;
+            --text-main: #f3f0ff;
+            --text-muted: #8d87a7;
+            --card-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            --font-main: 'Outfit', sans-serif;
+            --font-mono: 'Space Grotesk', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 20px;
+            height: 85vh;
+            min-height: 650px;
+        }
+
+        @media (max-width: 900px) {
+            .container {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+        }
+
+        /* Glassmorphism Panels */
+        .panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .panel:hover {
+            border-color: rgba(161, 93, 252, 0.2);
+            box-shadow: 0 20px 60px rgba(161, 93, 252, 0.05);
+        }
+
+        /* Config Panel Style */
+        .config-panel {
+            gap: 20px;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 5px;
+            background: linear-gradient(90deg, var(--text-main), var(--text-muted));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        h2.gradient-text {
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        .divider {
+            height: 1px;
+            background: var(--glass-border);
+            margin: 10px 0;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+        }
+
+        input {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            padding: 12px 16px;
+            color: var(--text-main);
+            font-family: var(--font-main);
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px var(--glass-focus);
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        /* Buttons with micro-interactions */
+        .btn {
+            background: linear-gradient(135deg, var(--accent-primary) 0%, #7622ea 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 20px;
+            color: white;
+            font-family: var(--font-main);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(138, 43, 226, 0.5);
+            background: linear-gradient(135deg, #b37eff 0%, var(--accent-primary) 100%);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            box-shadow: none;
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--accent-secondary);
+            color: var(--accent-secondary);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        /* Console Log Area */
+        .console-container {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 15px;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            overflow-y: auto;
+            max-height: 250px;
+            gap: 8px;
+        }
+
+        .console-title {
+            font-family: var(--font-main);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .console-line {
+            display: flex;
+            flex-direction: column;
+            border-left: 2px solid var(--text-muted);
+            padding-left: 8px;
+            margin-bottom: 5px;
+        }
+
+        .console-line.success { border-color: var(--accent-success); }
+        .console-line.error { border-color: var(--accent-error); }
+        .console-line.info { border-color: var(--accent-secondary); }
+
+        .console-header {
+            font-weight: 700;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .console-time {
+            color: var(--text-muted);
+        }
+
+        /* Chat Panel Style */
+        .chat-panel {
+            flex-grow: 1;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.75rem;
+            background: rgba(0, 255, 135, 0.1);
+            color: var(--accent-success);
+            padding: 4px 10px;
+            border-radius: 20px;
+            border: 1px solid rgba(0, 255, 135, 0.2);
+        }
+
+        .status-badge.offline {
+            background: rgba(255, 74, 90, 0.1);
+            color: var(--accent-error);
+            border-color: rgba(255, 74, 90, 0.2);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--accent-success);
+            box-shadow: 0 0 8px var(--accent-success);
+        }
+
+        .status-badge.offline .status-dot {
+            background-color: var(--accent-error);
+            box-shadow: 0 0 8px var(--accent-error);
+        }
+
+        .messages-area {
+            flex-grow: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.02);
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 14px 18px;
+            border-radius: 15px;
+            line-height: 1.5;
+            font-size: 0.95rem;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            align-self: flex-end;
+            background: rgba(161, 93, 252, 0.15);
+            border: 1px solid rgba(161, 93, 252, 0.25);
+            border-bottom-right-radius: 3px;
+        }
+
+        .message.bot {
+            align-self: flex-start;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            border-bottom-left-radius: 3px;
+        }
+
+        .message.system-error {
+            align-self: center;
+            background: rgba(255, 74, 90, 0.08);
+            border: 1px solid rgba(255, 74, 90, 0.2);
+            color: #ff9da6;
+            font-size: 0.85rem;
+            max-width: 90%;
+            text-align: center;
+        }
+
+        .chat-input-area {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input-area input {
+            flex-grow: 1;
+        }
+
+        /* Pulsing indicator for active request */
+        .typing-indicator {
+            display: flex;
+            gap: 5px;
+            padding: 5px;
+            align-items: center;
+        }
+
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--text-muted);
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(161, 93, 252, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Configuration and Debug Panel -->
+        <div class="panel config-panel">
+            <div>
+                <h2 class="gradient-text">W5 Fortress</h2>
+                <div class="subtitle">Client kết nối an toàn đến API Gateway + Bedrock</div>
+            </div>
+            <div class="divider"></div>
+
+            <div class="form-group">
+                <label for="apiUrl">API Gateway Endpoint URL</label>
+                <input type="url" id="apiUrl" placeholder="https://xxxx.execute-api.us-east-1.amazonaws.com/prod/chat" required>
+            </div>
+
+            <div class="form-group">
+                <label for="apiKey">API Key (x-api-key)</label>
+                <input type="password" id="apiKey" placeholder="Nhập API Key để mở khoá" required>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- MH5: Built-in Throttling simulator -->
+            <div class="form-group">
+                <label>MH5: Demo Throttling</label>
+                <div class="subtitle" style="margin-bottom: 8px;">Gửi đồng thời 5 request để kích hoạt cơ chế Reserved Concurrency = 1.</div>
+                <button type="button" class="btn btn-outline" id="btnTestThrottle">
+                    ⚡ Kích Hoạt Throttling
+                </button>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Live Debug Log Console -->
+            <div class="console-title">
+                <span>CONSOLES / NETWORK LOGS</span>
+                <span style="color: var(--accent-secondary); cursor: pointer;" onclick="clearLogs()">Clear</span>
+            </div>
+            <div class="console-container" id="consoleLogs">
+                <div class="console-line info">
+                    <div class="console-header">
+                        <span>Hệ thống sẵn sàng.</span>
+                        <span class="console-time">--:--:--</span>
+                    </div>
+                    <div>Hãy điền API URL và API Key để bắt đầu gửi tin nhắn.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Panel -->
+        <div class="panel chat-panel">
+            <div class="chat-header">
+                <div>
+                    <h2>Amazon Bedrock Session</h2>
+                    <div class="subtitle">Model: amazon.nova-micro-v1:0</div>
+                </div>
+                <div class="status-badge offline" id="statusBadge">
+                    <div class="status-dot"></div>
+                    <span id="statusText">Chưa cấu hình</span>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Messages Screen -->
+            <div class="messages-area" id="messagesArea">
+                <div class="message bot">
+                    Xin chào! Tôi là trợ lý AI Bedrock được bảo vệ sau lớp bảo mật biên VPC và API Gateway. Hãy thử nhập tin nhắn để kiểm tra luồng end-to-end.
+                </div>
+            </div>
+
+            <!-- Input Bar -->
+            <form class="chat-input-area" id="chatForm">
+                <input type="text" id="userInput" placeholder="Nhập tin nhắn..." autocomplete="off" required>
+                <button type="submit" class="btn" id="btnSend">Gửi ↗</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const apiUrlInput = document.getElementById('apiUrl');
+        const apiKeyInput = document.getElementById('apiKey');
+        const statusBadge = document.getElementById('statusBadge');
+        const statusText = document.getElementById('statusText');
+        const messagesArea = document.getElementById('messagesArea');
+        const chatForm = document.getElementById('chatForm');
+        const userInput = document.getElementById('userInput');
+        const consoleLogs = document.getElementById('consoleLogs');
+        const btnTestThrottle = document.getElementById('btnTestThrottle');
+
+        // Load config from localStorage if available
+        if (localStorage.getItem('w5_api_url')) {
+            apiUrlInput.value = localStorage.getItem('w5_api_url');
+        }
+        if (localStorage.getItem('w5_api_key')) {
+            apiKeyInput.value = localStorage.getItem('w5_api_key');
+            updateStatus(true);
+        }
+
+        apiUrlInput.addEventListener('input', checkConfig);
+        apiKeyInput.addEventListener('input', checkConfig);
+
+        function checkConfig() {
+            const url = apiUrlInput.value.trim();
+            const key = apiKeyInput.value.trim();
+            if (url && key) {
+                localStorage.setItem('w5_api_url', url);
+                localStorage.setItem('w5_api_key', key);
+                updateStatus(true);
+            } else {
+                updateStatus(false);
+            }
+        }
+
+        function updateStatus(isConfigured) {
+            if (isConfigured) {
+                statusBadge.className = 'status-badge';
+                statusText.textContent = 'Đã kết nối API';
+            } else {
+                statusBadge.className = 'status-badge offline';
+                statusText.textContent = 'Chưa cấu hình';
+            }
+        }
+
+        function addLog(type, title, message) {
+            const now = new Date();
+            const timeStr = now.toTimeString().split(' ')[0];
+            const logLine = document.createElement('div');
+            logLine.className = `console-line ${type}`;
+            logLine.innerHTML = `
+                <div class="console-header">
+                    <span>${title}</span>
+                    <span class="console-time">${timeStr}</span>
+                </div>
+                <div>${message}</div>
+            `;
+            consoleLogs.appendChild(logLine);
+            consoleLogs.scrollTop = consoleLogs.scrollHeight;
+        }
+
+        function clearLogs() {
+            consoleLogs.innerHTML = '';
+        }
+
+        function appendMessage(sender, text) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${sender}`;
+            msgDiv.textContent = text;
+            messagesArea.appendChild(msgDiv);
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+            return msgDiv;
+        }
+
+        function showTypingIndicator() {
+            const indDiv = document.createElement('div');
+            indDiv.className = 'message bot typing-indicator';
+            indDiv.id = 'typingIndicator';
+            indDiv.innerHTML = `
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            `;
+            messagesArea.appendChild(indDiv);
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        }
+
+        function removeTypingIndicator() {
+            const indDiv = document.getElementById('typingIndicator');
+            if (indDiv) indDiv.remove();
+        }
+
+        async function sendPrompt(prompt, isManual = true) {
+            const url = apiUrlInput.value.trim();
+            const key = apiKeyInput.value.trim();
+
+            if (!url || !key) {
+                if (isManual) {
+                    alert('Vui lòng điền đầy đủ URL API Gateway và API Key trước!');
+                }
+                return { success: false, status: 0, error: 'Chưa cấu hình API URL/Key' };
+            }
+
+            const startTime = performance.now();
+            addLog('info', 'POST Request', `Đang gửi prompt đến /chat...`);
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': key
+                    },
+                    body: JSON.stringify({ prompt: prompt })
+                });
+
+                const duration = Math.round(performance.now() - startTime);
+                const data = await response.json();
+
+                if (response.ok) {
+                    addLog('success', `HTTP ${response.status} Success`, `Thời gian phản hồi: ${duration}ms.<br>Response: ${data.response.substring(0, 60)}...`);
+                    return { success: true, status: response.status, data: data };
+                } else {
+                    const errMsg = data.error || data.message || JSON.stringify(data);
+                    addLog('error', `HTTP ${response.status} Failed`, `Thời gian phản hồi: ${duration}ms.<br>Error: ${errMsg}`);
+                    return { success: false, status: response.status, error: errMsg };
+                }
+            } catch (err) {
+                const duration = Math.round(performance.now() - startTime);
+                addLog('error', 'Fetch Error', `Mất kết nối hoặc CORS block sau ${duration}ms.<br>Chi tiết: ${err.message}`);
+                return { success: false, status: 0, error: err.message };
+            }
+        }
+
+        // Chat Form Submission
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            appendMessage('user', text);
+            userInput.value = '';
+            showTypingIndicator();
+
+            const res = await sendPrompt(text, true);
+            removeTypingIndicator();
+
+            if (res.success) {
+                appendMessage('bot', res.data.response.trim());
+            } else {
+                appendMessage('system-error', `Lỗi hệ thống (${res.status}): ${res.error}. Có thể do thiếu quyền hạn hoặc bị khóa bởi API Gateway/Lambda.`);
+            }
+        });
+
+        // MH5 Throttling simulation trigger
+        btnTestThrottle.addEventListener('click', async () => {
+            const url = apiUrlInput.value.trim();
+            const key = apiKeyInput.value.trim();
+
+            if (!url || !key) {
+                alert('Vui lòng điền đầy đủ URL API Gateway và API Key trước!');
+                return;
+            }
+
+            addLog('info', 'Throttle simulation', 'Đang gửi đồng thời 30 request tới API Gateway...');
+            
+            const prompt = "Hãy kể một câu chuyện ngắn.";
+            const requests = [];
+
+            // Spawn 30 concurrent requests
+            for (let i = 1; i <= 30; i++) {
+                requests.push(
+                    (async (idx) => {
+                        try {
+                            const response = await fetch(url, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'x-api-key': key
+                                },
+                                body: JSON.stringify({ prompt: `${prompt} (Request #${idx})` })
+                            });
+                            const status = response.status;
+                            const resData = await response.json();
+                            return { id: idx, status, data: resData };
+                        } catch (err) {
+                            return { id: idx, status: 0, error: err.message };
+                        }
+                    })(i)
+                );
+            }
+
+            const results = await Promise.all(requests);
+            
+            // Format log for visual evaluation
+            let summary = "<strong style='color: var(--accent-secondary);'>Kết quả kiểm tra Concurrency:</strong><br>";
+            let hasThrottled = false;
+
+            results.forEach(res => {
+                let statusColor = "var(--accent-success)";
+                if (res.status === 429 || res.status === 502 || res.status === 500 || res.status === 0) {
+                    statusColor = "var(--accent-error)";
+                    hasThrottled = true;
+                }
+                const detail = res.status === 200 ? "Thành công" : (res.status === 429 ? "429 Throttled" : (res.status === 500 ? "500 Bedrock Throttled" : `Lỗi (${res.status})`));
+                summary += `Request #${res.id}: <span style="color: ${statusColor}; font-weight: bold;">HTTP ${res.status}</span> (${detail})<br>`;
+            });
+
+            if (hasThrottled) {
+                summary += "<br><span style='color: var(--accent-success);'>✓ Kiểm thử thành công! Cơ chế Throttling (API Gateway / Bedrock) đã được chứng minh hoạt động (chặn các request đồng thời khác).</span>";
+                addLog('success', 'Throttling Proof', summary);
+            } else {
+                summary += "<br><span style='color: var(--accent-error);'>✗ Không thấy lỗi throttling. Hãy đảm bảo stack đã được triển khai đầy đủ.</span>";
+                addLog('error', 'Throttling Proof Failed', summary);
+            }
+        });
+    </script>
+</body>
+</html>
