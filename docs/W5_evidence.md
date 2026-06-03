@@ -2,7 +2,7 @@
 
 ## 1. Thông tin chung (Cover)
 * **Thành viên:** Nguyễn Công Thịnh
-* **Repository Link:** [Link repo của bạn]
+* **Repository Link:** https://github.com/nguyencongthinh-dev/w5-xbrain
 
 
 
@@ -12,7 +12,7 @@
 
 Dưới đây là sơ đồ chi tiết kiến trúc bảo mật **W5 Network Fortress** của hệ thống đã triển khai.
 
-![alt text](image-16.png)
+![Sơ đồ kiến trúc bảo mật chi tiết W5 Network Fortress](images/image-16.png)
 
 ---
 
@@ -45,10 +45,10 @@ VPC Flow Logs đã được kích hoạt trên toàn bộ VPC và cấu hình đ
 
 #### Bằng chứng kiểm tra Route Table & VPC Flow Logs:
 *Danh sách Route Table của Public Subnet và Private Subnet trong VPC `vpc-0325fea1804a1d478`*
-![alt text](image.png)
-![alt text](image-1.png)
+![Cấu hình Route Table cho Public Subnet](images/image.png)
+![Cấu hình Route Table cho Private Subnet](images/image-1.png)
 **Màn hình CloudWatch Logs hiển thị các bản ghi Flow Logs dạng ACCEPT/REJECT của Log Group `/aws/vpc/flowlogs/w5-fortress`**
-![alt text](image-2.png)
+![Màn hình logs từ VPC Flow Logs trên CloudWatch](images/image-2.png)
 
 
 ## 3. MH2 — Network Security Hardening (Hardened SG + NACL)
@@ -72,14 +72,14 @@ Custom Network ACL (`w5-fortress-private-nacl`) được liên kết với 2 Pri
 
 #### Bằng chứng cấu hình & Negative Test:
 * *Màn hình Inbound Rules của Security Groups (EFS, App, Bastion)*
-![alt text](image-3.png)
-![alt text](image-4.png)
-![alt text](image-5.png)   
+![Inbound rules của Security Group dành cho Bastion Host](images/image-3.png)
+![Inbound rules của Security Group dành cho App Instance](images/image-4.png)
+![Inbound rules của Security Group dành cho EFS Mount Target](images/image-5.png)   
 * *Màn hình cấu hình Private NACL với Rule 90 DENY*
-![alt text](image-6.png)
+![Quy tắc kiểm soát inbound trong Private Subnet NACL (DENY Rule 90)](images/image-6.png)
 * **Negative Test SSH**: Thử nghiệm kết nối SSH trực tiếp từ máy cá nhân đến Private App Instance (`10.0.11.235`) -> Kết quả: Kết nối bị timeout (Blocked) vì port 22 của máy App chỉ mở cho Bastion.
   * *Màn hình terminal thử kết nối SSH trực tiếp bị thất bại*
-  ![alt text](image-7.png)
+  ![Kiểm thử an ninh tiêu cực: SSH trực tiếp bị chặn từ ngoài Internet](images/image-7.png)
 
 ---
 
@@ -105,7 +105,7 @@ cat /mnt/efs/w5_verification.txt
 # Kết quả hiển thị: Hardened EFS Layer Verification File - Created at ...
 ```
 * *Màn hình Terminal sau khi chạy các lệnh trên máy App hiển thị EFS mount và nội dung file w5_verification.txt*
-![alt text](image-8.png)
+![Terminal xác nhận EFS đã mount thành công lên App Host](images/image-8.png)
 
 ### AWS Backup Plan:
 * **Backup Vault**: `w5-fortress-backup-vault`.
@@ -127,9 +127,9 @@ cat /mnt/efs/w5_verification.txt
    cat /mnt/efs/aws-backup-restore_[timestamp]/w5_verification.txt
    ```
 * *Màn hình trang AWS Backup Jobs hiển thị Restore Job đã "Completed"*
-![alt text](image-10.png)
+![AWS Backup Restore Job chuyển sang trạng thái Completed](images/image-10.png)
 * *Màn hình terminal hiển thị việc đọc thành công dữ liệu w5_verification.txt từ thư mục khôi phục*
-![alt text](image-11.png)
+![Terminal xác thực đọc file w5_verification.txt từ thư mục khôi phục thành công](images/image-11.png)
 
 ---
 
@@ -168,7 +168,7 @@ Chúng tôi đã đặt API Gateway REST API trước Lambda để bảo vệ t�
    * **Kết quả**: Trả về `HTTP/1.1 200 OK` chứa các header: `Access-Control-Allow-Origin: *`, `Access-Control-Allow-Methods: POST,OPTIONS`.
 
 * *Màn hình terminal chạy script test_api.py hiển thị cả 4 case test thành công*
-![alt text](image-9.png)
+![Kiểm thử API Gateway với tập lệnh test_api.py](images/image-9.png)
 
 ---
 
@@ -206,9 +206,9 @@ Do giới hạn tài khoản ở mức concurrency thấp (Unreserved Concurrenc
      ]
      ```
 * *Màn hình terminal chạy lệnh upload S3 và quét DynamoDB ra kết quả thành công*
-![alt text](image-12.png)
+![Terminal thực hiện S3 upload và kết quả ghi log tự động trên DynamoDB](images/image-12.png)
 * *Màn hình CloudWatch Logs của Lambda ghi nhận sự kiện s3_record*
-![alt text](image-13.png)
+![Sự kiện trigger S3 ObjectCreated ghi nhận thành công trong CloudWatch Logs](images/image-13.png)
 
 ---
 
@@ -222,9 +222,9 @@ Do giới hạn tài khoản ở mức concurrency thấp (Unreserved Concurrenc
 
 #### Bằng chứng hoạt động Live:
 * *Màn hình giao diện Web Chat Client đang hiển thị cuộc đối thoại hỏi đáp với Bedrock thành công*
-![alt text](image-14.png)
+![Giao diện Glassmorphism Chat Client tương tác trực tiếp với Bedrock](images/image-14.png)
 * *Màn hình DynamoDB Console hiển thị các bản ghi log có khóa bắt đầu bằng CHAT:*
-![alt text](image-15.png)
+![Các bản ghi hội thoại được lưu trữ tự động trong bảng DynamoDB chat-logs](images/image-15.png)
 
 ---
 
