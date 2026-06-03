@@ -93,8 +93,11 @@ Chúng tôi đã triển khai Amazon EFS để làm lớp chia sẻ dữ liệu 
 ### Bằng chứng Mount EFS thành công:
 Trong quá trình khởi tạo Private App Instance, đoạn Script UserData sẽ tự động cài đặt `amazon-efs-utils`, thực hiện mount EFS tại `/mnt/efs` qua giao thức TLS, cấu hình tự động mount lại trong `/etc/fstab`, và ghi nhận một file verify:
 ```bash
-# Lệnh kiểm tra khi SSH vào App Instance qua Bastion:
-ssh -i <your-key>.pem ec2-user@3.237.254.133
+# Lệnh kiểm tra khi SSH vào App Instance qua Bastion (Sử dụng SSH Agent Forwarding để chuyển tiếp key an toàn):
+# (Local) ssh-add w5-fortress-key.pem (Thêm key vào agent máy cá nhân)
+# (Local) ssh -A -i w5-fortress-key.pem ec2-user@3.237.254.133 (SSH vào Bastion với cờ -A)
+# (Bastion) ssh ec2-user@10.0.11.235 (SSH trực tiếp sang App Host)
+ssh -A -i w5-fortress-key.pem ec2-user@3.237.254.133
 ssh ec2-user@10.0.11.235
 
 # Kiểm tra mount
