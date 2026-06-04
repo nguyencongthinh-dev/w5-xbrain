@@ -242,4 +242,58 @@ Dưới đây là bảng tổng hợp các bài kiểm thử an ninh tiêu cực
 | **MH4** | API Gateway sai khóa | Gửi REST API kèm header `x-api-key: WRONG-KEY` | HTTP 403 Forbidden | **Đạt** |
 
 ---
+
+## 9. Thiết lập Giới Hạn Chi Phí (AWS Budgets)
+
+Để kiểm soát chặt chẽ chi phí và tránh phát sinh ngoài ý muốn (vượt quá hạn mức tài khoản Free Tier), một AWS Budget đã được cấu hình trực tiếp trên tài khoản với giới hạn **1.0 USD/tháng**.
+
+* **Tên Budget:** `w5-fortress-monthly-budget`
+* **Hạn mức giới hạn:** 1.0 USD
+* **Tần suất kiểm tra:** Hàng tháng (Monthly)
+* **Cơ chế cảnh báo (Notifications):**
+  * Gửi cảnh báo qua Email khi chi phí đạt **80%** (0.80 USD) định mức thực tế (Actual Spend).
+  * Gửi cảnh báo qua Email khi chi phí đạt **100%** (1.00 USD) định mức thực tế (Actual Spend).
+* **Email nhận thông báo:** `nguyencongthinh.dev@gmail.com`
+
+### Trạng thái cấu hình trên AWS CLI:
+Khi truy vấn qua AWS CLI, ngân sách đã được kích hoạt thành công với cấu hình:
+```json
+{
+    "BudgetName": "w5-fortress-monthly-budget",
+    "BudgetLimit": {
+        "Amount": "1.0",
+        "Unit": "USD"
+    },
+    "BudgetType": "COST",
+    "TimeUnit": "MONTHLY"
+}
+```
+
+---
+
+## 10. Triển khai Website tĩnh lên S3 + CloudFront (HTTPS)
+
+Để người dùng có thể truy cập giao diện web tĩnh an toàn qua HTTPS và tối ưu hóa chi phí (Free Tier), một hệ thống phân phối nội dung tĩnh đã được cấu hình:
+* **S3 Bucket chứa code tĩnh:** `w5-fortress-website-258325253510` (được cấu hình private hoàn toàn).
+* **AWS CloudFront OAC (Origin Access Control):** Xác thực và ký request để CloudFront có quyền đọc file từ S3 an toàn mà không cần mở public S3.
+* **AWS CloudFront Distribution:** Phân phối nội dung toàn cầu qua HTTPS mặc định (hỗ trợ Free Tier trọn đời).
+* **Đường dẫn truy cập trực tuyến (Website URL):** [d2ckevl2ztnc3k.cloudfront.net/index.html](https://d2ckevl2ztnc3k.cloudfront.net/index.html)
+
+### Kết quả kiểm tra kết nối HTTPS của CloudFront qua `curl.exe`:
+```http
+HTTP/1.1 200 OK
+Content-Type: text/html
+Content-Length: 24720
+Connection: keep-alive
+Date: Thu, 04 Jun 2026 03:50:34 GMT
+Server: AmazonS3
+X-Cache: Miss from cloudfront
+Via: 1.1 ...
+```
+
+> [!NOTE]
+> **Lưu ý về tên miền DuckDNS:** Vì DuckDNS là dịch vụ Dynamic DNS chỉ hỗ trợ cấu hình bản ghi địa chỉ IP (A record) và không cho phép tạo các bản ghi CNAME tùy biến (như CNAME xác thực chứng chỉ ACM SSL cho tên miền bên thứ ba), nên việc sử dụng trực tiếp CloudFront Distribution Domain mặc định (`*.cloudfront.net`) là giải pháp tối ưu và an toàn nhất để đảm bảo kết nối HTTPS được mã hóa bảo mật toàn vẹn và hoàn toàn miễn phí ($0).
+
+---
 **Kết luận**: Hệ thống đã được hardening toàn diện từ Network, Storage đến Serverless API, đáp ứng đầy đủ tiêu chuẩn Production-grade của bài tập W5 trong khi vẫn duy trì chi phí tối thiểu trên tài khoản Free Tier.
+
